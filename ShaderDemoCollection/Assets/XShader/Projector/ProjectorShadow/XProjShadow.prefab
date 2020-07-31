@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3085224495272360982
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3085224495272360984}
+  - component: {fileID: 3085224495272360983}
+  - component: {fileID: 3085224495272360985}
+  m_Layer: 0
+  m_Name: XProjShadow
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3085224495272360984
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3085224495272360982}
+  m_LocalRotation: {x: 0.34128204, y: 0, z: 0, w: 0.93996096}
+  m_LocalPosition: {x: 0, y: 3.289, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 39.91, y: 0, z: 0}
+--- !u!119 &3085224495272360983
+Projector:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3085224495272360982}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_NearClipPlane: 1
+  m_FarClipPlane: 5
+  m_FieldOfView: 10
+  m_AspectRatio: 1
+  m_Orthographic: 0
+  m_OrthographicSize: 6.07
+  m_Material: {fileID: 2100000, guid: 9f026566b797eec45a63d154c9b588bd, type: 2}
+  m_IgnoreLayers:
+    serializedVersion: 2
+    m_Bits: 512
+--- !u!114 &3085224495272360985
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3085224495272360982}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 267661248c3fcc249a7dd1d0d52a00ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Projector: {fileID: 0}
+  m_RenderTextureSize: 0
+  m_ProjectMat: {fileID: 2100000, guid: 9f026566b797eec45a63d154c9b588bd, type: 2}
+  m_RenderTexture: {fileID: 0}
+  ShadowCamera: {fileID: 0}
