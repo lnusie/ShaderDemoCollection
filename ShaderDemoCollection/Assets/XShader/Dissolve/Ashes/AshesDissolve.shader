@@ -1,6 +1,6 @@
 ﻿// Upgrade NOTE: replaced '_World2Object' with 'unity_WorldToObject'
 
-Shader "X_Shader/Effects/BlockDissolve"
+Shader "X_Shader/Dissolve/AshesDissolve"
 {
     Properties
     {
@@ -12,9 +12,14 @@ Shader "X_Shader/Effects/BlockDissolve"
         _GradientTex("Gradient Tex", 2D) = "white" {}
         _EdgeColor1("EdgColor 1", Color) = (1,1,1,1)
         _EdgeColor2("EdgColor 2", Color) = (1,1,1,1)
-        _EdgeWidth("EdgeWidth", Range(0.01,1)) = 0.1
-        _FocusPos("Focus Pos", Vector) = (0.5,0.5,0,0)
-
+        _EdgeLength("_EdgeLength", Range(0.01,1)) = 0.1
+        _DissolveMinValue("DissolveMinValue", Float) = 0
+        _DissolveMaxValue("DissolveMaxValue", Float) = 1
+        _IsHorizontal("IsHorizontal", Float) = 0
+        _DissolveValue("DissolveValue", Range(0,1)) = 0
+        _AshesWidth("AshesWidth",Range(0,1)) = 0.2
+        _AshesFloatDirection("Float Direction", Vector) = (0,0,0,0) 
+        _AshesFloatSpeed("AshesFloatSpeed",Float) = 1
     }
     SubShader
     {
@@ -42,12 +47,17 @@ Shader "X_Shader/Effects/BlockDissolve"
             float _DissolveStrength;
             fixed4 _EdgeColor1;
             fixed4 _EdgeColor2;
-            fixed _EdgeWidth;
-            fixed4 _FocusPos;
+            fixed _EdgeLength;
+            fixed4 _AshesFloatDirection;
 
-            fixed _G_DissolveRadius;
-            float _G_DissolveDistance;
-            float _G_DissolveHeight;
+            float _DissolveMinValue;
+            float _DissolveMaxValue;
+            float _DissolveValue;
+            float _AshesWidth;
+            float _AshesFloatSpeed;
+            float _AshesDensity;
+
+            float _IsHorizontal;
 
             #include "UnityCG.cginc"
             #include "Lighting.cginc"
@@ -57,7 +67,6 @@ Shader "X_Shader/Effects/BlockDissolve"
                 float4 vertex : POSITION;
                 float2 uv : TEXCOORD0;
                 float4 normal : NORMAL;
-                float4 tangent : TANGENT;
             };
 
             struct v2f
@@ -66,29 +75,23 @@ Shader "X_Shader/Effects/BlockDissolve"
                 float4 vertex : SV_POSITION;
                 float3 worldPos : TEXCOORD1;
                 float3 normal : TEXCOORD2;
-                float4 screenPos : TEXCOORD3;
-                float4 tangentPos : TEXCOORD4;
             };
            
             v2f vert (appdata v)
             {
                 v2f o;
                 o.worldPos = mul(unity_ObjectToWorld, v.vertex);
+               
+                float4 localFloatDir = mul(unity_WorldToObject, _AshesFloatDirection);
+                localFloatDir = normalize(localFloatDir);
+                float pos = lerp(v.vertex.x, v.vertex.y, _IsHorizontal);
+                float4 distanceScale = length(pos - _DissolveMinValue) / length(_DissolveMaxValue - _DissolveMinValue);
+                float floatStrength = saturate(distanceScale - _DissolveValue - _EdgeLength);
+                floatStrength = floatStrength * _AshesFloatSpeed;
+                v.vertex += localFloatDir * floatStrength; 
                 o.vertex = UnityObjectToClipPos(v.vertex);
-                //根据裁剪坐标计算屏幕坐标:
-                //1.先进行齐次除法，得到[-1,1]的NDC坐标，
-                //2.再将其范围映射到[0,1]的视口空间下
-                //3.再根据屏幕分辨率计算出屏幕坐标
-                //必须先进行齐次除法再插值
-                // o.screenPos.xy = o.vertex.xy * 0.5 / o.vertex.w + 0.5;
-                // o.screenPos.zw = o.vertex.zw;
-                o.screenPos = ComputeScreenPos(o.vertex);
-                
                 o.normal = normalize(mul(v.normal, (float3x3)unity_WorldToObject));
                 o.uv = v.uv;
-                float3 binormal = cross(normalize(v.normal), normalize(v.tangent.xyz)) * v.tangent.w;
-                float3x3 obj2Tangent = float3x3(v.tangent.xyz, binormal, v.normal.xyz);
-                o.tangentPos.xyz = mul(obj2Tangent, v.vertex);
                 return o;
             }
  
@@ -108,23 +111,34 @@ Shader "X_Shader/Effects/BlockDissolve"
                 fixed3 viewDir = normalize(_WorldSpaceCameraPos.xyz - i.worldPos.xyz);
                 fixed3 specular = _LightColor0 * pow(saturate(dot(reflectDir, viewDir)),_Glossiness);
                 c.rgb = diffuse + ambient + specular; 
-                
-                //0~1
-                float4 viewportPos = i.screenPos / i.screenPos.w;
-                //viewportPos.x = _ScreenParams.x / _ScreenParams.y * viewportPos.y;
-                float distance = length(viewportPos.xy - _FocusPos.xy);
-                float dissolveScale = distance / max(0.001, _G_DissolveRadius);
-                //c.rgb = lerp(0, c.rgb, saturate(dissolveScale));
-                
-                float viewDistance = length(_WorldSpaceCameraPos.xyz - i.worldPos.xyz);
-                //不需要溶解时 needDissolve 为 1
-                float needDissolve = step(0, viewDistance - _G_DissolveDistance);
-                float heightScale = i.worldPos.y / (_G_DissolveHeight + 0.01);
-                fixed4 noise = tex2D(_NoiseTex, i.tangentPos.xy);
-                //return noise;
-                //clip(noise.x * noise.y - (1 - dissolveScale));
-                clip((dissolveScale - noise.x * heightScale) + needDissolve);
 
+                float4 objPos = mul(unity_WorldToObject, i.worldPos);
+                fixed4 noise = tex2D(_NoiseTex, i.uv);
+                float2 pos = lerp(objPos.y, objPos.x, _IsHorizontal);
+                fixed diff = length(pos - _DissolveMinValue) / length(_DissolveMaxValue - _DissolveMinValue);
+                diff = _DissolveValue - diff;
+                diff *= noise.y * noise.x * 2;
+                fixed dissolveValue = diff / _EdgeLength;
+                dissolveValue = saturate(dissolveValue);
+                
+                //避免取到颜色很奇怪的边界值
+                fixed gradientUV = clamp(dissolveValue,0.1,0.9); 
+                fixed4 edgeColor = tex2D(_GradientTex, gradientUV);
+
+                c = lerp(edgeColor, c, dissolveValue + 0.1);
+              
+                fixed4 ashesCol = 0; 
+
+                float ashesValue = saturate(-diff/_AshesWidth) * 2;
+                c = lerp(c, ashesCol, ashesValue);
+                
+                if(ashesValue > 0.99)
+                {
+                    fixed4 ashesNoise = tex2D(_NoiseTex, i.uv);
+                    clip(ashesNoise.y * ashesNoise.z - 0.1);
+                }
+
+                clip(diff + _AshesWidth);
                 return c;
             }
             ENDCG

@@ -1,6 +1,6 @@
 ﻿// Upgrade NOTE: replaced '_World2Object' with 'unity_WorldToObject'
 
-Shader "X_Shader/Effects/SimpleDissolve"
+Shader "X_Shader/Dissolve/DirectionDissolve"
 {
     Properties
     {
@@ -13,7 +13,10 @@ Shader "X_Shader/Effects/SimpleDissolve"
         _EdgeColor1("EdgColor 1", Color) = (1,1,1,1)
         _EdgeColor2("EdgColor 2", Color) = (1,1,1,1)
         _EdgeLength("_EdgeLength", Range(0.01,1)) = 0.1
-        _DissolveValue("Dissolve Value", Range(0, 1)) = 0
+        _DissolveMinValue("DissolveMinValue", Float) = 0
+        _DissolveMaxValue("DissolveMaxValue", Float) = 0
+        _DissolveValue("DissolveValue", Range(0,1)) = 0
+        _IsHorizontal("IsHorizontal", Float) = 0
     }
     SubShader
     {
@@ -38,11 +41,16 @@ Shader "X_Shader/Effects/SimpleDissolve"
             half _Glossiness;
             half _Metallic;
             fixed4 _Color;
-            float _DissolveValue;
+            float _DissolveStrength;
             fixed4 _EdgeColor1;
             fixed4 _EdgeColor2;
             fixed _EdgeLength;
-            float4 _Position;
+
+            float _DissolveMinValue;
+            float _DissolveMaxValue;
+            float _DissolveValue;
+
+            float _IsHorizontal;
 
             #include "UnityCG.cginc"
             #include "Lighting.cginc"
@@ -58,14 +66,14 @@ Shader "X_Shader/Effects/SimpleDissolve"
             {
                 float2 uv : TEXCOORD0;
                 float4 vertex : SV_POSITION;
-                float4 worldPos : TEXCOORD1;
+                float4 objPos : TEXCOORD1;
                 float4 normal : TEXCOORD2;
             };
 
             v2f vert (appdata v)
             {
                 v2f o;
-                o.worldPos = mul(unity_ObjectToWorld, v.vertex);
+                o.objPos = v.vertex;
                 //o.objPos = v.vertex;
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.normal = mul(v.normal, unity_WorldToObject);
@@ -80,24 +88,27 @@ Shader "X_Shader/Effects/SimpleDissolve"
                 fixed4 albedo = tex2D (_MainTex, i.uv) * _Color;
                 float4 worldNormal = normalize(i.normal);
                 float4 lightDir = normalize(_WorldSpaceLightPos0);
-                float h = dot(worldNormal, lightDir) * 0.5 +0.5;
+                float h = dot(worldNormal, lightDir) * 0.5 + 0.5;
                 fixed3 diffuse =_LightColor0.rgb * albedo.rgb * h;
                 fixed3 ambient = UNITY_LIGHTMODEL_AMBIENT.rgb;//环境光
                 c.rgb = diffuse + ambient;
 
                 fixed4 noise = tex2D(_NoiseTex, i.uv);
-                fixed diff = _DissolveValue - noise.r * noise.g;
+                float pos = lerp(i.objPos.y, i.objPos.x, _IsHorizontal);
+
+                fixed diff = (pos - _DissolveMinValue) / (_DissolveMaxValue - _DissolveMinValue);
+                diff = _DissolveValue - diff;
+                diff *= noise.y * noise.x * 2;
                 fixed dissolveValue = diff / _EdgeLength;
                 dissolveValue = saturate(dissolveValue);
                 
                 //用渐变纹理提供更丰富的细节
                 //edgColor = lerp(_EdgeColor1, _EdgeColor2, saturate(t));
                 fixed4 edgeColor = tex2D(_GradientTex, dissolveValue);
-                
                
                 c = lerp(edgeColor, c, dissolveValue);
             
-                clip(diff);
+                clip(diff - 0.01);
                 return c;
             }
             ENDCG
