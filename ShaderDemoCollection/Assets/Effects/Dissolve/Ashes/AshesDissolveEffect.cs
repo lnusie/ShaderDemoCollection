@@ -20,7 +20,7 @@ public class AshesDissolveEffect : MonoBehaviour
 
     public Vector3 m_AshesFloatDirection;
 
-    public float m_AhsesFloatSpeed;
+    public float m_AshesFloatSpeed;
 
     [Range(0, 1)]
     public float m_EdgeLength = 0;
@@ -86,7 +86,7 @@ public class AshesDissolveEffect : MonoBehaviour
         yield return new WaitForSeconds(2);
         if (DissolveMaterial == null) yield break;
         GetModelInfo();
-        DissolveMaterial.SetFloat("_AhsesFloatSpeed", m_AhsesFloatSpeed);
+        DissolveMaterial.SetFloat("_AshesFloatSpeed", m_AshesFloatSpeed);
         DissolveMaterial.SetVector("_AshesFloatDirection", m_AshesFloatDirection);
         DissolveMaterial.SetFloat("_DissolveMinValue", m_DissolveMinValue);
         DissolveMaterial.SetFloat("_DissolveMaxValue", m_DissolveMaxValue);

@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: AshesDissolve
-  m_Shader: {fileID: 4800000, guid: 2a424e9dd9291fa4a80f636e99a95b7f, type: 3}
+  m_Name: BlockDissolve 3
+  m_Shader: {fileID: 4800000, guid: caecbdf3b8c9a804ab935da4b1290768, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -82,8 +82,9 @@ Material:
     - _DissolveValue: 1
     - _DstBlend: 0
     - _EdgeLength: 0.01
+    - _EdgeWidth: 0.1
     - _GlossMapScale: 1
-    - _Glossiness: 1
+    - _Glossiness: 7
     - _GlossyReflections: 1
     - _Height: 2.08
     - _IsHorizontal: 1
@@ -100,7 +101,7 @@ Material:
     m_Colors:
     - _AshesFloatDirection: {r: 0, g: 2, b: 0, a: 0}
     - _Center: {r: 0, g: 0.5, b: 0, a: 1}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 0.2924528, g: 0.11405895, b: 0, a: 1}
     - _DissolveMaxValue: {r: 0, g: 0, b: 0, a: 0}
     - _DissolveMinValue: {r: 0, g: 0, b: 0, a: 0}
     - _DissolvePos1: {r: 0, g: -1, b: 0, a: 0}
@@ -111,4 +112,5 @@ Material:
     - _EdgeColor2: {r: 0, g: 0, b: 0, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _FloatDirection: {r: 0, g: 0, b: 0, a: 1}
+    - _FocusPos: {r: 0.5, g: 0.5, b: 0, a: 0}
     - _Position: {r: 1, g: 1, b: 1, a: 0.2}
