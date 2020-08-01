@@ -83,7 +83,7 @@ Material:
     - _DstBlend: 0
     - _EdgeLength: 0.01
     - _GlossMapScale: 1
-    - _Glossiness: 1
+    - _Glossiness: 145
     - _GlossyReflections: 1
     - _Height: 2.08
     - _IsHorizontal: 1

@@ -232,8 +232,8 @@ MonoBehaviour:
   m_AshesWidth: 0.228
   m_DissolveSpeed: 1
   m_IsHorizontal: 0
-  m_AshesFloatDirection: {x: 1, y: 1, z: 0}
-  m_AhsesFloatSpeed: 20
+  m_AshesFloatDirection: {x: 0, y: 1, z: 1}
+  m_AshesFloatSpeed: 1
   m_EdgeLength: 0.117
   m_DissolveMaterial: {fileID: 0}
 --- !u!136 &196337357
@@ -303,7 +303,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 196337355}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 6.91, y: 1.94, z: 3.403}
+  m_LocalPosition: {x: -0.46, y: 1.94, z: 3.403}
   m_LocalScale: {x: 2, y: 2, z: 2}
   m_Children: []
   m_Father: {fileID: 0}
