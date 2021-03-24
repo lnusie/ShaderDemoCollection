@@ -2,14 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-class ShadowRenderer
-{
-    public Transform m_EntityTrans;
-
-
-}
-
-
 public class XProjShaderManager : MonoBehaviour
 {
     private Projector m_Projector;
