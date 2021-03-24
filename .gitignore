@@ -1,1 +1,7 @@
 ShaderDemoCollection/Library/
+ShaderDemoCollection/.vs/
+ShaderDemoCollection/Assembly-CSharp.csproj
+ShaderDemoCollection/ShaderDemoCollection.sln
+ShaderDemoCollection/Logs/
+ShaderDemoCollection/obj/
+ShaderDemoCollection/Temp/

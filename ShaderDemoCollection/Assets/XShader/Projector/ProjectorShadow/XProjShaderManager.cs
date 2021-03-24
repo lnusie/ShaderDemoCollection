@@ -82,21 +82,21 @@ public class XProjShaderManager : MonoBehaviour
 
     void Start()
     {
+        m_ShadowCamera = GetComponent<Camera>();
         m_Projector = GetComponent<Projector>();
         if (m_Projector == null)
         {
             m_Projector = gameObject.AddComponent<Projector>();
+            m_Projector.nearClipPlane = m_ShadowCamera.nearClipPlane;
+            m_Projector.farClipPlane = m_ShadowCamera.farClipPlane;
+            m_Projector.fieldOfView = m_ShadowCamera.fieldOfView;
+            m_Projector.ignoreLayers = ~LayerMask.GetMask("Ground");
+            m_Projector.orthographic = m_ShadowCamera.orthographic;
+            //只要orthographicSize相等就能保证阴影能够对齐
+            m_Projector.orthographicSize = m_ShadowCamera.orthographicSize;
         }
-        m_ShadowCamera = GetComponent<Camera>();
-        m_Projector.nearClipPlane = m_ShadowCamera.nearClipPlane;
-        m_Projector.farClipPlane = m_ShadowCamera.farClipPlane;
-        m_Projector.fieldOfView = m_ShadowCamera.fieldOfView;
-        m_Projector.ignoreLayers = ~LayerMask.GetMask("Ground");
-        m_Projector.orthographic = m_ShadowCamera.orthographic;
-        //只要orthographicSize相等就能保证阴影能够对齐
-        m_Projector.orthographicSize = m_ShadowCamera.orthographicSize;
         m_ShadowCamera.SetReplacementShader(Shader.Find("X_Shader/Projector/SimpleShadowCaster"), "");
-
+        m_ShadowCamera.cullingMask = LayerMask.GetMask("Entity");
         var maskTex = Resources.Load<Texture>("Textures/Mask");
         ProjectMat.SetTexture("_FalloffTex", maskTex);
         m_Projector.material = ProjectMat;
