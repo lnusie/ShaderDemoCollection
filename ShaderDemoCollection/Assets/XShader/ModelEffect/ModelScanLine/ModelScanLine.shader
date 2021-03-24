@@ -80,6 +80,7 @@ Shader "X_Shader/ModelEffect/ModelScanLine"
                 fixed3 diffuse =_LightColor0.rgb * albedo.rgb * h;
                 fixed3 ambient = UNITY_LIGHTMODEL_AMBIENT.rgb;//环境光
                 c.rgb = diffuse + ambient;
+                
                 half2 uv = i.uv;
                 uv.y = i.worldPos.y + _ScanSpeed * _Time.y;
                 float3 viewDir = normalize(i.worldPos - _WorldSpaceCameraPos);
