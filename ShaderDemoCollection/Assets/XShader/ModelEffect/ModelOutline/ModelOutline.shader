@@ -1,10 +1,11 @@
-﻿Shader "X_Shader/ModelEffect/SimpleOutline"
+﻿Shader "X_Shader/ModelEffect/ModelOutline"
 
 {
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
         _Color ("Color", Color) = (1,1,1,1)
+        _OutlineWidth ("OutlineWidth", Range(0, 10)) = 1
         [HideInInspector]_SrcBlend ("_SrcBlend", Float) = 1
 		[HideInInspector]_DstBlend ("_DstBlend", Float) = 0
         [HideInInspector] _ZWrite ("_ZWrite", Float) = 1
@@ -79,10 +80,9 @@
 
         Pass
         {
-            Blend [_SrcBlend] [_DstBlend]
-            ZWrite [_ZWrite]
+            Name "OUTLINE"
+            ZWrite On
             Cull front 
-            Name "OUTLINE"//注意内部会将名字都转为大写。
 
             CGPROGRAM
 
@@ -107,27 +107,26 @@
                 float4 pos : SV_POSITION;
             };
 
-            //要点1 ：在视角空间下外扩顶点，保证偏移均匀
-            //要点2 ：描边粗细不受透视影响
+            float _OutlineWidth;
 
             v2f vert (appdata v)
             {
                 v2f o;
-                //把法线转换到视图空间
-                float3 vnormal = mul((float3x3)UNITY_MATRIX_IT_MV,v.normal);
-
-                //把法线转换到投影空间
-                float2 pnormal_xy = mul((float2x2)UNITY_MATRIX_P,vnormal.xy);
-                
                 o.pos = UnityObjectToClipPos(v.vertex);
 
+                //把法线转换到视图空间
+                float3 vnormal = mul((float3x3)UNITY_MATRIX_IT_MV,v.normal);
+                //把法线转换到投影空间,相当于 TransformViewToProjection(vnormal.xy)执行了相应的操作
+                float2 extendDir = normalize(mul((float2x2)UNITY_MATRIX_P, vnormal.xy));
+                
                 //朝法线方向外扩
-                o.pos.xy = o.pos.xy + pnormal_xy * 1;
 
+                
+                o.pos.xy += extendDir.xy / _ScreenParams.xy * _OutlineWidth * o.pos.w;
+ 
                 o.uv = v.uv;
                 return o;
             }
-
             sampler2D _MainTex;
             half4 _Color;
 

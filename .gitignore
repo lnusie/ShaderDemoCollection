@@ -5,3 +5,5 @@ ShaderDemoCollection/ShaderDemoCollection.sln
 ShaderDemoCollection/Logs/
 ShaderDemoCollection/obj/
 ShaderDemoCollection/Temp/
+ShaderDemoCollection/Assets/TransformVisualization/
+ShaderDemoCollection/Assets/TransformVisualization.meta
