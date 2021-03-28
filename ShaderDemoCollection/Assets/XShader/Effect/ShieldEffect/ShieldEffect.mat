@@ -70,19 +70,24 @@ Material:
     - _DstBlend: 0
     - _EdgeRange: 1.2
     - _EdgeWidth: 0.42
+    - _FresnelRange: 5
+    - _FresnelScale: 0.4
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
     - _HitMaxWaveWidth: 1
+    - _HitRimWidth: 1.6
     - _HitWaveValue: 1
     - _HitWaveWidth: 1
-    - _HitWidth: 1
+    - _HitWidth: 2
     - _IntersectWidth: 0.7
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
     - _OutlineWidth: 1
     - _Parallax: 0.02
+    - _ScanHeight: 0.3
+    - _ScanWidth: 3.3
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
@@ -97,3 +102,4 @@ Material:
     - _HitPoint1: {r: 0, g: 0, b: 0, a: 0}
     - _HitPoint2: {r: 0, g: 0, b: 0, a: 0}
     - _IntersectColor: {r: 0.9497719, g: 0.75, b: 1, a: 1}
+    - _ScanColor: {r: 0, g: 0.011921883, b: 1, a: 1}

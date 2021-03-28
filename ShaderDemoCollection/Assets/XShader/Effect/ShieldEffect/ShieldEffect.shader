@@ -8,7 +8,8 @@
         _Color ("Color", Color) = (1,1,1,1)
 
         _EdgeColor("EdgeColor", Color) = (1,1,1,1)
-        _EdgeRange("EdgeRange", Range(0,2)) = 1
+        _FresnelScale("FresnelScale",Range(0,1)) = 0.5
+        _FresnelRange("FresnelRange",Range(0,10)) = 5
 
         _IntersectColor("IntersectColor", Color) = (1,1,1,1)
         _IntersectWidth("IntersectWidth", Range(0,10)) = 1
@@ -21,24 +22,59 @@
         _HitColor ("HitColor", Color) = (1,1,1,1)
         _HitRimWidth("HitRimWidth", Range(0,5)) = 1
 
+        _ScanHeight("ScanHeight", Range(-10,10)) = 1
+        _ScanWidth("ScanWidth", Range(0,10)) = 1
+        _ScanColor("ScanColor", Color) = (1,1,1,1)
+
     }
     SubShader
     {
-        Blend SrcAlpha OneMinusSrcAlpha
-        ZWrite Off
-        Cull Off 
-        
         Tags
         {
             "RenderType" = "Transparent" 
             "Queue" = "Transparent"
             "IgnoreProjector"="True" 
         }
+        Blend SrcAlpha OneMinusSrcAlpha
+        ZWrite Off
+        Cull Off 
 
-        CGPROGRAM
+        CGINCLUDE
 
         #include "UnityCG.cginc"
         #include "Lighting.cginc"
+        
+        sampler2D _MainTex;
+        sampler2D _CameraDepthTexture;
+        sampler2D _NoiseTex;
+
+        float4 _MainTex_ST;
+        half4 _Color;
+
+        half4 _IntersectColor;
+        float _IntersectWidth;
+
+        half4 _EdgeColor;
+        float _EdgeRange;
+
+        float _FresnelScale;
+        float _FresnelRange;
+        
+        half4 _DisturbColor;
+        float _DisturbWidth;
+        float _DisturbStrength;
+        float _DisturbSpeedFactor;
+
+        float _HitRimWidth;
+        half4 _HitColor;
+
+        float4 _HitPoint0;
+        float4 _HitPoint1;
+        float4 _HitPoint2;
+        
+        float _ScanHeight;
+        float _ScanWidth;
+        float4 _ScanColor;
         
         struct appdata
         {
@@ -56,31 +92,6 @@
             float4 projPos : TEXCOORD3;
         };
 
-        sampler2D _MainTex;
-        sampler2D _CameraDepthTexture;
-        sampler2D _NoiseTex;
-
-        float4 _MainTex_ST;
-        half4 _Color;
-
-        half4 _IntersectColor;
-        float _IntersectWidth;
-
-        half4 _EdgeColor;
-        float _EdgeRange;
-        
-        half4 _DisturbColor;
-        float _DisturbWidth;
-        float _DisturbStrength;
-        float _DisturbSpeedFactor;
-
-        float _HitRimWidth;
-        half4 _HitColor;
-
-        float4 _HitPoint0;
-        float4 _HitPoint1;
-        float4 _HitPoint2;
-
         v2f BaseVert(appdata v)
         {
             v2f o;
@@ -91,7 +102,7 @@
             
             o.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
             o.projPos = ComputeScreenPos(o.pos);
-            COMPUTE_EYEDEPTH(o.projPos.z);
+            COMPUTE_EYEDEPTH(o.projPos.z); 
             return o;
         }
 
@@ -116,7 +127,17 @@
             hitDist = clamp(0, maxHitDist, hitDist);
             hitStrength2 = (maxHitDist - hitDist) / (maxHitDist + 0.001);
 
-            return min(hitStrength0 + hitStrength1 + hitStrength2, 1.1);
+            return min(hitStrength0 + hitStrength1 + hitStrength2, 1);
+        }
+
+        float GetTransparency(v2f i, out float ndotv)
+        {
+            //视觉方向决定透明度
+            float3 viewDir = normalize(_WorldSpaceCameraPos - i.worldPos); 
+            float3 worldNormal = normalize(i.worldNormal);
+            ndotv = dot(worldNormal, viewDir);
+            fixed t = step(0, ndotv);           
+            return (1 - t) * lerp(0.5, 0.1, abs(ndotv)) + t * lerp(0.6, 0.1, ndotv);
         }
 
         fixed4 BaseFrag (v2f i) : SV_Target
@@ -126,13 +147,9 @@
 
             //基本色
             fixed4 baseColor = tex2D(_MainTex, i.uv + disturbOffset * 0.00 + _Time.x * _DisturbSpeedFactor) * 1.3;
-            
-            //视觉方向决定透明度
-            float3 viewDir = normalize(_WorldSpaceCameraPos - i.worldPos); 
-            float3 worldNormal = normalize(i.worldNormal);
-            float ndotv = dot(worldNormal, viewDir);
-            fixed t = step(0, ndotv);           
-            float transparency = (1 - t) * lerp(0.5, 0.1, abs(ndotv)) + t * lerp(0.6, 0.1, ndotv);
+               
+            float ndotv;
+            float transparency = GetTransparency(i, ndotv);
 
             //深度决定相交程度
             float depth = i.projPos.z;
@@ -145,9 +162,8 @@
             fixed4 addColor = lerp(_Color, _IntersectColor * 2, intersect);
             color.rgb += addColor.rgb + disturbOffset * _DisturbColor.rgb * _DisturbStrength;
 
-            //边缘光
-            float k = _EdgeRange - abs(ndotv);              
-            color.rgb = lerp(color.rgb, _EdgeColor, saturate(k));
+            float fresnel = _FresnelScale + (1 - _FresnelScale) * pow(1 - ndotv, _FresnelRange);       
+            color.rgb = lerp(color.rgb, _EdgeColor, saturate(fresnel));
             color.a = transparency;
 
             float hitStrength = GetHitStrength(i, disturbOffset);
@@ -157,7 +173,7 @@
         }
 
         ENDCG
-        
+      
         Pass
         {
             CGPROGRAM
@@ -166,6 +182,7 @@
             #pragma fragment BaseFrag
             ENDCG
         }
-
     }
+    
+       
 }
