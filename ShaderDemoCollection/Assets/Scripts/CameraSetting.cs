@@ -11,6 +11,5 @@ public class CameraSetting : MonoBehaviour
     {
         Debug.LogError("OnEnable");
         GetComponent<Camera>().depthTextureMode = m_RenderDepth ? DepthTextureMode.Depth : DepthTextureMode.None;
-
     }
 }
