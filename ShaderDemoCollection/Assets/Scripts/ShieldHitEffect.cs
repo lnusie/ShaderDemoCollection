@@ -18,7 +18,8 @@ public class ShieldHitEffect : MonoBehaviour
     public float m_HitFadeSpeed = 1;
     public int m_MaxHitPoint = 3;
 
-
+    public int m_MaxHitPower = 3;
+    public int m_MinHitPower = 1;
 
     private List<HitInfo> m_HitInfos = new List<HitInfo>();
 
@@ -35,6 +36,17 @@ public class ShieldHitEffect : MonoBehaviour
 
     void Update()
     {
+        if(Input.GetKeyDown(KeyCode.T))
+        {
+            if (Time.timeScale == 1)
+            {
+                Time.timeScale = 0.2f;
+            }
+            else
+            {
+                Time.timeScale = 1;
+            }
+        }
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -80,7 +92,7 @@ public class ShieldHitEffect : MonoBehaviour
             if (info.m_HitStrength <= 0)
             {
                 info.m_Trans.position = hitPos;
-                info.m_HitStrength = Random.Range(0.3f, 1.2f);
+                info.m_HitStrength = Random.Range(m_MinHitPower, m_MaxHitPower);
                 return;
             }
             if (info.m_HitStrength < minStrength)
@@ -90,7 +102,7 @@ public class ShieldHitEffect : MonoBehaviour
             }
         }
         minStrengthInfo.m_Trans.position = hitPos;
-        minStrengthInfo.m_HitStrength = Random.Range(0.3f, 1.2f);
+        minStrengthInfo.m_HitStrength = Random.Range(m_MinHitPower, m_MaxHitPower);
         return;
     }
 

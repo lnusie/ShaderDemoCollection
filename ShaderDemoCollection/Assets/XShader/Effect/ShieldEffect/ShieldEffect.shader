@@ -21,11 +21,10 @@
 
         _HitColor ("HitColor", Color) = (1,1,1,1)
         _HitRimWidth("HitRimWidth", Range(0,5)) = 1
+        _DentRange("DentRange", Range(0,2)) = 0.1
+        _Softness("Softness", Range(0,10)) = 1
 
-        _ScanHeight("ScanHeight", Range(-10,10)) = 1
-        _ScanWidth("ScanWidth", Range(0,10)) = 1
-        _ScanColor("ScanColor", Color) = (1,1,1,1)
-
+        //_HitPoint0("HitPoint0", Vector) = (1,1,1,1)
     }
     SubShader
     {
@@ -71,10 +70,9 @@
         float4 _HitPoint0;
         float4 _HitPoint1;
         float4 _HitPoint2;
-        
-        float _ScanHeight;
-        float _ScanWidth;
-        float4 _ScanColor;
+     
+        float _DentRange;
+        float _Softness;
         
         struct appdata
         {
@@ -91,43 +89,55 @@
             float4 worldPos : TEXCOORD2;
             float4 projPos : TEXCOORD3;
         };
+        
+        float _GetHitStrength(float4 hitpoint, float3 worldPos,  float maxHitDist, float disturbOffset)
+        {
+            float hitPower = hitpoint.w;
+            float hitDist = distance(worldPos, hitpoint.xyz) + disturbOffset;
+            hitDist = clamp(0, maxHitDist, hitDist);
+             //越靠近中心强度越大 
+            float hitStrength = (maxHitDist - hitDist) / (maxHitDist + 0.001);
+            return hitStrength * hitPower * step(0, hitStrength);
+        }
 
+        float GetVertHitStrength(float3 vertLocalPos)
+        {
+            float4 localHitPos0 = mul(unity_WorldToObject, float4(_HitPoint0.xyz,1));
+            localHitPos0.w = _HitPoint0.w;
+            float4 localHitPos1 = mul(unity_WorldToObject, float4(_HitPoint0.xyz,1));
+            localHitPos1.w = _HitPoint1.w;
+            float4 localHitPos2 = mul(unity_WorldToObject, float4(_HitPoint0.xyz,1));
+            localHitPos2.w = _HitPoint2.w;
+            float hitStrength0 = _GetHitStrength(localHitPos0, vertLocalPos, _DentRange, 0);
+            float hitStrength1 = _GetHitStrength(localHitPos1, vertLocalPos, _DentRange, 0);
+            float hitStrength2 = _GetHitStrength(localHitPos2, vertLocalPos, _DentRange, 0);
+            float totalStrength = hitStrength0 + hitStrength1 + hitStrength2;
+            return totalStrength;
+        }
+        
+      
         v2f BaseVert(appdata v)
         {
             v2f o;
             o.uv = v.uv;
+            float hitStrength = GetVertHitStrength(v.vertex.xyz);
+            v.vertex.xyz -= hitStrength * v.normal * 0.01;
             o.pos = UnityObjectToClipPos(v.vertex);
-            o.worldNormal = mul(v.normal, (float3x3)unity_WorldToObject);
             o.worldPos = mul(unity_ObjectToWorld, v.vertex);
-            
+            o.worldNormal = mul(v.normal, (float3x3)unity_WorldToObject);
             o.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
             o.projPos = ComputeScreenPos(o.pos);
             COMPUTE_EYEDEPTH(o.projPos.z); 
             return o;
         }
 
-        float GetHitStrength(v2f i, float4 disturbOffset)
+
+        float GetFragHitStrength(v2f i, float3 disturbOffset)
         {
-            float hitStrength0 = _HitPoint0.w;
-            float hitDist = distance(i.worldPos.xyz, _HitPoint0.xyz) + disturbOffset.x * 0.3;
-            float maxHitDist = _HitRimWidth * hitStrength0;
-            hitDist = clamp(0, maxHitDist, hitDist);
-            hitStrength0 = (maxHitDist - hitDist) / (maxHitDist + 0.001);
-
-
-            float hitStrength1 = _HitPoint1.w;
-            hitDist = distance(i.worldPos.xyz, _HitPoint1.xyz) + disturbOffset.x * 0.3;
-            maxHitDist = _HitRimWidth * hitStrength1;
-            hitDist = clamp(0, maxHitDist, hitDist);
-            hitStrength1 = (maxHitDist - hitDist) / (maxHitDist + 0.001);
-
-            float hitStrength2 = _HitPoint2.w;
-            hitDist = distance(i.worldPos.xyz, _HitPoint2.xyz) + disturbOffset.x * 0.3;
-            maxHitDist = _HitRimWidth * hitStrength2;
-            hitDist = clamp(0, maxHitDist, hitDist);
-            hitStrength2 = (maxHitDist - hitDist) / (maxHitDist + 0.001);
-
-            return min(hitStrength0 + hitStrength1 + hitStrength2, 1);
+            float hitStrength0 = _GetHitStrength(_HitPoint0, i.worldPos.xyz, _HitRimWidth, disturbOffset.x);
+            float hitStrength1 = _GetHitStrength(_HitPoint1, i.worldPos.xyz, _HitRimWidth, disturbOffset.y);
+            float hitStrength2 = _GetHitStrength(_HitPoint2, i.worldPos.xyz, _HitRimWidth, disturbOffset.z);
+            return hitStrength0 + hitStrength1 + hitStrength2;
         }
 
         float GetTransparency(v2f i, out float ndotv)
@@ -166,9 +176,8 @@
             color.rgb = lerp(color.rgb, _EdgeColor, saturate(fresnel));
             color.a = transparency;
 
-            float hitStrength = GetHitStrength(i, disturbOffset);
-            color = lerp(color, _HitColor, hitStrength);
-
+            float hitStrength = GetFragHitStrength(i, disturbOffset * 0.3);
+            color = lerp(color, _HitColor, saturate(hitStrength));
             return color;
         }
 

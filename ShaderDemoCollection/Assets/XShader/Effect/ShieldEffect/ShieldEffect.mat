@@ -62,6 +62,7 @@ Material:
     m_Floats:
     - _BumpScale: 1
     - _Cutoff: 0.5
+    - _DentRange: 0.5
     - _DetailNormalMapScale: 1
     - _DisturbSpeedFactor: 0.5
     - _DisturbStrenFactor: 1
@@ -89,6 +90,7 @@ Material:
     - _ScanHeight: 0.3
     - _ScanWidth: 3.3
     - _SmoothnessTextureChannel: 0
+    - _Softness: 2
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0
@@ -99,6 +101,7 @@ Material:
     - _EdgeColor: {r: 0.9019608, g: 0.9947752, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _HitColor: {r: 1, g: 1, b: 1, a: 1}
+    - _HitPoint0: {r: 0, g: 1.67, b: -5.6, a: 1}
     - _HitPoint1: {r: 0, g: 0, b: 0, a: 0}
     - _HitPoint2: {r: 0, g: 0, b: 0, a: 0}
     - _IntersectColor: {r: 0.9497719, g: 0.75, b: 1, a: 1}
