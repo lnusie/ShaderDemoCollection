@@ -22,9 +22,8 @@
         _HitColor ("HitColor", Color) = (1,1,1,1)
         _HitRimWidth("HitRimWidth", Range(0,5)) = 1
         _DentRange("DentRange", Range(0,2)) = 0.1
-        _Softness("Softness", Range(0,10)) = 1
+        _Softness("Softness", Range(0, 2)) = 1
 
-        //_HitPoint0("HitPoint0", Vector) = (1,1,1,1)
     }
     SubShader
     {
@@ -94,7 +93,7 @@
         {
             float hitPower = hitpoint.w;
             float hitDist = distance(worldPos, hitpoint.xyz) + disturbOffset;
-            hitDist = clamp(0, maxHitDist, hitDist);
+            hitDist = clamp(hitDist, 0, maxHitDist);
              //越靠近中心强度越大 
             float hitStrength = (maxHitDist - hitDist) / (maxHitDist + 0.001);
             return hitStrength * hitPower * step(0, hitStrength);
@@ -121,7 +120,7 @@
             v2f o;
             o.uv = v.uv;
             float hitStrength = GetVertHitStrength(v.vertex.xyz);
-            v.vertex.xyz -= hitStrength * v.normal * 0.01;
+            v.vertex.xyz -= hitStrength * v.normal * _Softness * 0.1;
             o.pos = UnityObjectToClipPos(v.vertex);
             o.worldPos = mul(unity_ObjectToWorld, v.vertex);
             o.worldNormal = mul(v.normal, (float3x3)unity_WorldToObject);
@@ -152,11 +151,14 @@
 
         fixed4 BaseFrag (v2f i) : SV_Target
         {   
-            //扰动
-            float4 disturbOffset = tex2D(_NoiseTex, i.uv * _DisturbWidth + _Time.x * _DisturbSpeedFactor);
+            float hitStrength = GetFragHitStrength(i, 0) * 0.8;
 
+            //扰动
+            float4 disturbOffset = tex2D(_NoiseTex, i.uv * _DisturbWidth + _Time.x * _DisturbSpeedFactor * (1 + 0.01 * hitStrength));
+
+            
             //基本色
-            fixed4 baseColor = tex2D(_MainTex, i.uv + disturbOffset * 0.00 + _Time.x * _DisturbSpeedFactor) * 1.3;
+            fixed4 baseColor = tex2D(_MainTex, i.uv + _Time.x * _DisturbSpeedFactor) * 1.3;
                
             float ndotv;
             float transparency = GetTransparency(i, ndotv);
@@ -170,13 +172,12 @@
             fixed4 color = baseColor;
 
             fixed4 addColor = lerp(_Color, _IntersectColor * 2, intersect);
-            color.rgb += addColor.rgb + disturbOffset * _DisturbColor.rgb * _DisturbStrength;
+            color.rgb += addColor.rgb + disturbOffset * _DisturbColor.rgb * _DisturbStrength * 1.5; 
 
             float fresnel = _FresnelScale + (1 - _FresnelScale) * pow(1 - ndotv, _FresnelRange);       
             color.rgb = lerp(color.rgb, _EdgeColor, saturate(fresnel));
             color.a = transparency;
 
-            float hitStrength = GetFragHitStrength(i, disturbOffset * 0.3);
             color = lerp(color, _HitColor, saturate(hitStrength));
             return color;
         }

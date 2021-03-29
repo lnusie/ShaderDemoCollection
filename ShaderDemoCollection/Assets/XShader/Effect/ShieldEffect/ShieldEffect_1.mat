@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: ShieldEffect
+  m_Name: ShieldEffect_1
   m_Shader: {fileID: 4800000, guid: e292252a8278be94b9a59d42a880185a, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
@@ -62,7 +62,7 @@ Material:
     m_Floats:
     - _BumpScale: 1
     - _Cutoff: 0.5
-    - _DentRange: 0.5
+    - _DentRange: 0.05
     - _DetailNormalMapScale: 1
     - _DisturbSpeedFactor: 0.5
     - _DisturbStrenFactor: 1
@@ -71,13 +71,13 @@ Material:
     - _DstBlend: 0
     - _EdgeRange: 1.2
     - _EdgeWidth: 0.42
-    - _FresnelRange: 5
-    - _FresnelScale: 0.4
+    - _FresnelRange: 2.8
+    - _FresnelScale: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
     - _HitMaxWaveWidth: 1
-    - _HitRimWidth: 1.6
+    - _HitRimWidth: 0.3
     - _HitWaveValue: 1
     - _HitWaveWidth: 1
     - _HitWidth: 2
@@ -90,19 +90,19 @@ Material:
     - _ScanHeight: 0.3
     - _ScanWidth: 3.3
     - _SmoothnessTextureChannel: 0
-    - _Softness: 2
+    - _Softness: 0.1
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
-    - _Color: {r: 0.033018887, g: 0.34343928, b: 1, a: 1}
+    - _Color: {r: 1, g: 0.99551004, b: 0.6745098, a: 1}
     - _DisturbColor: {r: 1, g: 1, b: 1, a: 1}
-    - _EdgeColor: {r: 0.9019608, g: 0.9947752, b: 1, a: 1}
+    - _EdgeColor: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _HitColor: {r: 1, g: 1, b: 1, a: 1}
     - _HitPoint0: {r: 0, g: 1.67, b: -5.6, a: 1}
     - _HitPoint1: {r: 0, g: 0, b: 0, a: 0}
     - _HitPoint2: {r: 0, g: 0, b: 0, a: 0}
-    - _IntersectColor: {r: 0.9497719, g: 0.75, b: 1, a: 1}
+    - _IntersectColor: {r: 1, g: 1, b: 1, a: 1}
     - _ScanColor: {r: 0, g: 0.011921883, b: 1, a: 1}
