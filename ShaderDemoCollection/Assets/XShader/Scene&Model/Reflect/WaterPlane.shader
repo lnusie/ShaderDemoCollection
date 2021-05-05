@@ -75,15 +75,16 @@
             {
                 float2 uv = i.uv;
                 float4 worldPos = i.worldPos;
-                float3 offset0;
-                float power = GetWavePower(i, _Wave0, _WaveRange0, offset0);
                 float4 screenPos = i.screenPos;
-                float time = frac(_Time.y * 0.8);
-                float uv_move = floor(_Time.y * 0.5) * 0; 
-                float4 ripple = tex2D(_RippleTex, TRANSFORM_TEX(uv, _RippleTex) + uv_move);
-                time = frac((_Time.y * 0.5 + ripple.a));
-                float ripple_value = (time) - 1 + ripple.x;
+
+                //采样涟漪贴图
+                float4 ripple = tex2D(_RippleTex, TRANSFORM_TEX(uv, _RippleTex));
+                //frac: 取小数部分, 这里如果把+ ripple.a 放到后面，出现和消失则衔接不上
+                float time = frac(_Time.y * 0.5 + ripple.a);
+                //r通道的圆有渐变，从而使ripple_value随时间变化
+                float ripple_value = (time - 1) + ripple.r;
                 ripple_value = clamp(ripple_value * 9.0, 0.0, 5.0);
+                
                 float ripplePower = sin(ripple_value * 3.14) / (ripple_value + 1);
                 ripplePower *= (1 - time);
                 ripple.yz = ripple.yz * 2 - 1;
