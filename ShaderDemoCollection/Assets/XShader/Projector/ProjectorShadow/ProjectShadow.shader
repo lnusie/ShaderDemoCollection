@@ -57,7 +57,7 @@ Shader "X_Shader/Projector/ProjectShadow"
 				v2f o;
                 o.worldPos = mul(unity_ObjectToWorld, v.vertex);
 				//v.vertex += v.normal;
-				o.uvDecal = mul(unity_Projector, v.vertex);
+				o.uvDecal = mul(unity_Projector, v.vertex);//unity_Projector应该就相当于UnityObjectToClipPos + ComputeScreenPos，只不过其中的MVP矩阵是用projector的参数计算的
 				o.uvFalloff = mul(unity_Projector, v.vertex);
 				o.pos = UnityObjectToClipPos (v.vertex);
 				//其实是变换到[0,-w]
@@ -68,25 +68,28 @@ Shader "X_Shader/Projector/ProjectShadow"
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
-				fixed4 decal = tex2Dproj (_ShadowTex, UNITY_PROJ_COORD(i.uvDecal));
-				decal *= _Color;
-                fixed2 uv = i.uvDecal.xy / i.uvDecal.w;
-                decal *= step(0.01, uv.x);
-                decal *= step(0.01, uv.y);
-                decal *= 1 - step(0.99, uv.x);
-                decal *= 1 - step(0.99, uv.y);
+				fixed shadowValue = tex2Dproj(_ShadowTex, UNITY_PROJ_COORD(i.uvDecal)).r;
+                fixed2 uv = i.uvDecal.xy / i.uvDecal.w;//齐次除法，转化为ndc坐标
+
+                // decal *= step(0.01, uv.x);
+                // decal *= step(0.01, uv.y);
+                // decal *= 1 - step(0.99, uv.x);
+                // decal *= 1 - step(0.99, uv.y);
 				//fixed falloff = tex2Dproj (_FalloffTex, UNITY_PROJ_COORD(i.uvFalloff)).r;
-				float2 viewportPos = i.screenPos.xy / i.screenPos.w;
-				float viewportDistance = length(viewportPos - float2(0.5,0.5));
-				fixed fadeScale = (_ShadowVisibleRange - viewportDistance) / _ShadowVisibleRange;
-				decal.a = saturate(fadeScale) * step(0.01, decal.a);
-                float3 worldNormal = normalize(i.normal);
+				
+				fixed viewportPos = i.screenPos.xy / i.screenPos.w;
+				fixed viewportDistance = length(viewportPos - fixed2(0.5,0.5));
+				fixed fadeScale = saturate((_ShadowVisibleRange - viewportDistance) / _ShadowVisibleRange);
+				shadowValue *= step(0.5, shadowValue) * fadeScale;
+
+				//阴影随视角减弱
+				fixed3 worldNormal = normalize(i.normal);
                 fixed3 viewDir = normalize(_ProjectorPos.xyz - i.worldPos.xyz);
                 float vDotN = dot(viewDir, worldNormal);
-                decal.a *= step(0.1, vDotN);
+                shadowValue *= step(0.1, vDotN);
 
 				//decal.a *= step(0.01, _ShadowMaxHeight - i.worldPos.y);
-				return float4(0, 0, 0, decal.a);
+				return fixed4(_Color.r, _Color.g, _Color.b, shadowValue);
 			}   
 			
 			ENDCG

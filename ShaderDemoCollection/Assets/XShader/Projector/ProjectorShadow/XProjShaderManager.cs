@@ -104,12 +104,20 @@ public class XProjShaderManager : MonoBehaviour
         CheckRTSize();
     }
 
+    void OnDestroy()
+    {
+        if (m_RenderTexture != null)
+        {
+            RenderTexture.ReleaseTemporary(m_RenderTexture);
+        }
+    }
+
     void CheckRTSize()
     {
         if (m_RenderTexture == null || m_RenderTexture.width != m_RenderTextureWidth
             || m_RenderTexture.height != m_RenderTextureHeight)
         {
-            m_RenderTexture = new RenderTexture(m_RenderTextureWidth, m_RenderTextureHeight, 0);
+            m_RenderTexture = RenderTexture.GetTemporary(m_RenderTextureWidth, m_RenderTextureHeight, 0, RenderTextureFormat.R8);
             m_ShadowCamera.targetTexture = m_RenderTexture;
             m_ProjectMat.SetTexture("_ShadowTex", m_RenderTexture);
         }
