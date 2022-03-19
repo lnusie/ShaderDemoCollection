@@ -78,8 +78,6 @@ public class XProjShaderManager : MonoBehaviour
         }
     }
 
-    public Transform test;
-
     void Start()
     {
         m_ShadowCamera = GetComponent<Camera>();
