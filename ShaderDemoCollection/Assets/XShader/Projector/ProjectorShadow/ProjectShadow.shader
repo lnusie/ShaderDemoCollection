@@ -57,7 +57,7 @@ Shader "X_Shader/Projector/ProjectShadow"
 				v2f o;
                 o.worldPos = mul(unity_ObjectToWorld, v.vertex);
 				//v.vertex += v.normal;
-				o.uvDecal = mul(unity_Projector, v.vertex);//unity_Projector应该就相当于UnityObjectToClipPos + ComputeScreenPos，只不过其中的MVP矩阵是用projector的参数计算的
+				o.uvDecal = mul(unity_Projector, v.vertex);
 				o.uvFalloff = mul(unity_Projector, v.vertex);
 				o.pos = UnityObjectToClipPos (v.vertex);
 				//其实是变换到[0,-w]
